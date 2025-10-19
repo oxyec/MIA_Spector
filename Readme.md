@@ -25,17 +25,16 @@ MIA-Spector/
 │
 ├── scripts/
 │   ├── gradio_text.py         # 文本 MIA Gradio 前端
-│   ├── gradio_image.py        # 图像 MIA 前端（开发中）
-│   └── train_calibrator.py    # 概率校准器训练脚本
+│   └── gradio_image.py        # 图像 MIA 前端（开发中）  
 │
 ├── src/
 │   ├── metric_score.py        # 指标计算（Min-K++、PPL等）
 │   ├── load_yaml.py           # YAML 阈值加载与判决逻辑
 │   ├── attacks/               # 攻击类实现（ScoreCalculator等）
-│   ├── utils/                 # 工具函数与日志模块
-│   └── configs/               # 各模型的阈值配置 (*.yaml)
-│
-├── data/                      # 示例数据集 (WikiMIA_length32/64/128)
+│   └── utils/                 # 工具函数与日志模块
+│                   
+│—— configs/                   # 各模型的阈值配置 (*.yaml)
+├── datasets/                  # 示例数据集 (WikiMIA_length32/64/128)
 └── README.md
 ```
 
