@@ -29,10 +29,9 @@ MIA-Spector/
 │
 ├── src/
 │   ├── metric_score.py        # 指标计算（Min-K++、PPL等）
-│   ├── load_yaml.py           # YAML 阈值加载与判决逻辑
-│   ├── attacks/               # 攻击类实现（ScoreCalculator等）
-│   └── utils/                 # 工具函数与日志模块
-│                   
+│   └── load_yaml.py           # YAML 阈值加载与判决逻辑
+│                 
+│── attacks/                   # 攻击类实现（ScoreCalculator等）          
 │—— configs/                   # 各模型的阈值配置 (*.yaml)
 ├── datasets/                  # 示例数据集 (WikiMIA_length32/64/128)
 └── README.md
