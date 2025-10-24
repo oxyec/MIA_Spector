@@ -1,12 +1,15 @@
 from fastapi import Request, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from config import get_settings
+from app.config import get_settings
 
 '''
     鉴权密钥验证
 '''
 
 settings = get_settings()
+
+EXEMPT_PATHS = {"/healthz", "/readyz", "/metrics"}  # 不需要鉴权
 
 def _parse_keys():
     keys = [k.strip() for k in settings.API_KEYS.split(",") if k.strip()]
@@ -18,6 +21,9 @@ print(ALLOWED_KEYS)
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.url.path in EXEMPT_PATHS:
+            return await call_next(request)
+        
         if not settings.REQUIRE_AUTH:
             return await call_next(request)
 
@@ -27,4 +33,4 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             if token and (token in ALLOWED_KEYS):
                 return await call_next(request)
 
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     REQUIRE_AUTH: bool = Field(True, description="是否启用 API Key 鉴权")
 
     class Config:
-        env_file = ".env"          # 自动加载 .env 文件
+        env_file = "/home/wanghuili/MIA-Spector/service/.env"          # 自动加载 .env 文件
         env_file_encoding = "utf-8"
         case_sensitive = False     # 环境变量名大小写不敏感
 
@@ -50,8 +50,6 @@ class Settings(BaseSettings):
             "WikiMIA_length256": "/home/wanghuili/MIA-Spector/configs/text/llama/threshold_WikiMIA_length256.yaml",
         },
     }
-
-settings = Settings()
 
 
 @lru_cache()

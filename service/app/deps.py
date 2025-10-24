@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Dict, Any
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from config import get_settings
+from app.config import get_settings
 
 from attacks.attack_text import ScoreCalculator
 from src.metric_score import compute_single_metric 
@@ -10,6 +10,10 @@ from src.load_yaml import decide_single, load_yaml_config
 import torch
 
 settings = get_settings()
+
+'''
+    functools.lru_cache 的 LRU 特性：当缓存达到上限时，最近最少使用的缓存会被移除
+'''
 
 @lru_cache(maxsize=8)  # 最大缓存8个模型
 def get_calc(family: str, model_key: str) -> 'ScoreCalculator':
@@ -20,7 +24,7 @@ def get_calc(family: str, model_key: str) -> 'ScoreCalculator':
     # Define Parameters
     use_fast = False if family == "llama" else True
     trust_remote = True if family == "llama" else False
-    tok = AutoTokenizer.from_pretrained()
+    tok = AutoTokenizer.from_pretrained(hf_id, use_fast=use_fast, trust_remote_code=trust_remote)
 
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token

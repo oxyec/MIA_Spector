@@ -1,0 +1,9 @@
+/* 如果项目已配置 Tailwind，解开注释：
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+*/
+
+/* 无 Tailwind 时，可添加一些最小样式保证可读性 */
+:root { color-scheme: light; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: #f8fafc; }

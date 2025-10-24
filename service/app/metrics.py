@@ -1,5 +1,12 @@
 from prometheus_client import Counter, Histogram, Gauge
 
+'''
+    Define Prometheus 监控API服务运行状况
+    Counter: 统计总数
+    Histogram: 记录延迟分布
+    Gauge: 表示GPU当前是否在使用
+'''
+
 REQ_COUNTER = Counter("mia_requests_total", "Total API requests", ["route", "method"])
 REQ_LATENCY = Histogram("mia_request_latency_ms", "Request latency (ms)", ["route"], buckets=(10,25,50,100,200,400,800,1600))
 DECIDE_YES = Counter("mia_decision_yes_total", "Number of Yes decisions", ["metric_group"])
