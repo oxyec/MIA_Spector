@@ -1,39 +1,51 @@
-# 🧠 MIA-Spector: Membership Inference Analysis Toolkit
+## 🧠 MIA-Spector: Membership Inference Analysis Platform
 
-**MIA-Spector** 是一个面向大模型隐私评估的统一平台，旨在对 **文本生成模型** 与 **多模态模型（图像-文本）** 进行成员推理攻击（Membership Inference Attack, MIA）分析与可视化。
+**MIA-Spector** 是一个面向大模型隐私评估的统一平台，支持 **文本生成模型（LLM）** 与 **多模态模型（图像-文本）** 的成员推理攻击（Membership Inference Attack, MIA）分析与可视化。
+本平台由两部分组成：
 
-本项目包含两个核心子模块：
-
-1. 📝 **Text-MIA Inspector** — 针对 LLM 的文本成员攻击分析
-2. 🖼️ **Image-MIA Inspector** — 针对视觉/多模态模型的图像成员攻击分析
-
----
-
-## 🌟 功能概览
-
-| 模块                      | 功能                                                                                   | 特点                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| **Text-MIA Inspector**  | 计算文本样本在给定语言模型下的 MIA 指标（Min-K%、Min-K++、困惑度统计、隐藏层范数等），自动生成阈值配置、可视化 ROC / AUC 并支持单样本推断。 | 支持 Hugging Face Transformers 模型，兼容 LLaMA、Pythia、GPT-Neo 等；支持 Gradio UI。 |
-| **Image-MIA Inspector** | 基于视觉特征分布差异（熵、置信度、KL 距离、特征模长）实现图像模型成员推理；兼容 ViT、CLIP、LLaVA 等模型。                        | 适用于多模态隐私评估，可扩展到 VL-MIA。                                                 |
+1. 🧩 **MIA-Inspector API（后端）** — 基于 FastAPI 的 MIA 决策服务
+2. 💡 **MIA-Portal（前端）** — 基于 React + Tailwind 的可视化控制台
 
 ---
 
-## 🧩 模块结构
+## 🌟 功能总览
+
+| 模块                         | 功能                                            | 技术亮点                                                    |
+| -------------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| **后端 MIA-Inspector API**   | 统一加载多种 LLM（Pythia、LLaMA 等），提供 MIA 指标计算与阈值判定接口 | ✔ FastAPI 异步架构<br>✔ 多模型自动注册 + 缓存加载<br>✔ Prometheus 性能监控 |
+| **前端 MIA-Portal 控制台**      | 交互式界面调用后端接口，支持模型选择、配置加载、单样本推断与结果展示            | ✔ 暗色模式美化<br>✔ 响应式布局<br>✔ JSON 高亮可视化                     |
+| **安全层 (Auth + RateLimit)** | API Key 鉴权 + Token Bucket 限流算法，防止滥用与爆破        | ✔ 动态读取 `.env`<br>✔ 自定义限速参数<br>✔ 每个客户端独立计数               |
+| **指标分析核心 (Metric Engine)** | 支持 Min-K%、Min-K++、PPL、Renyi-entropy 等多种指标     | ✔ 自动加载 YAML 阈值<br>✔ Youden J / FPR@α 模式切换               |
+| **系统监控**                   | `/metrics` 接口导出实时统计                           | ✔ 请求量、延迟直方图、GPU 使用率                                     |
+
+---
+
+## 🧩 项目结构
 
 ```
 MIA-Spector/
 │
-├── scripts/
-│   ├── gradio_text.py         # 文本 MIA Gradio 前端
-│   └── gradio_image.py        # 图像 MIA 前端（开发中）  
+├── service/
+│   ├── app/              ← 后端 API (FastAPI)
+│   │   ├── main.py       # 入口
+│   │   ├── deps.py       # 模型加载与缓存
+│   │   ├── middlewares/  # 限流与鉴权中间件
+│   │   ├── routers/      # 路由 (health, meta, decide)
+│   │   └── config.py     # 全局配置（含 MODELS, CFGS）
+│   │
+│   ├── portal/           ← 前端 (React + Vite + Tailwind)
+│   │   ├── src/
+│   │   │   ├── pages/Console.jsx     # 控制台主界面
+│   │   │   ├── components/SectionCard.jsx
+│   │   │   └── index.css             # 统一样式
+│   │   └── vite.config.js
+│   │
+│   └── uvicorn.run.sh     # 一键启动脚本
 │
-├── src/
-│   ├── metric_score.py        # 指标计算（Min-K++、PPL等）
-│   └── load_yaml.py           # YAML 阈值加载与判决逻辑
-│                 
-│── attacks/                   # 攻击类实现（ScoreCalculator等）          
-│—— configs/                   # 各模型的阈值配置 (*.yaml)
-├── datasets/                  # 示例数据集 (WikiMIA_length32/64/128)
+├── attacks/               # MIA 指标核心逻辑
+├── src/                   # 工具函数 (YAML加载、指标计算)
+├── configs/               # 阈值配置文件
+├── models/                # 本地模型权重路径
 └── README.md
 ```
 
@@ -41,147 +53,151 @@ MIA-Spector/
 
 ## ⚙️ 环境安装
 
-```bash
-# 创建环境
-conda create -n MIA python=3.11
-conda activate MIA
+### 后端环境
 
-# 安装依赖
+```bash
+conda create -n mia-inspector python=3.11
+conda activate mia-inspector
 pip install -r requirements.txt
 ```
 
-核心依赖：
+### 前端环境
 
-```
-torch >= 2.1
-transformers >= 4.40
-datasets
-gradio
-numpy, pandas, scipy, scikit-learn
-matplotlib, seaborn, tqdm
+```bash
+cd service/portal
+npm install
 ```
 
 ---
 
-## 🚀 快速开始
+## 🚀 启动与使用
 
-### 📝 1. 文本 MIA 工具
-
-启动 Web 界面：
+### 🔹 启动后端
 
 ```bash
-python -m scripts.gradio_text
+cd service/app
+bash ../uvicorn.run.sh
 ```
 
-若在远程服务器运行，请使用端口转发：
+或手动：
 
 ```bash
-ssh -L 7860:127.0.0.1:7860 -p <port> <user>@<server_ip>
+uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 ```
 
-然后在浏览器打开：
+**配置说明**
 
-```
-http://127.0.0.1:7860
-```
+* `.env` 文件：
 
-界面功能：
+  ```bash
+  API_KEYS=abc123,def456
+  REQUIRE_AUTH=True
+  ```
+* 鉴权测试：
 
-* 输入文本样本；
-* 选择模型（如 Pythia-2.8B, LLaMA-2-7B 等）；
-* 选择指标（Min-K++, perplexity_range 等）；
-* 点击「推理」即可获得：
-
-  * 判决结果：`Yes / No / Uncertain`
-  * 置信度：`0~1`
-  * 指标值、阈值、方向、模式等详细信息。
-
-> 📄 阈值配置文件位于 `src/configs/*.yaml`，自动加载并支持自定义 alpha。
+  ```bash
+  curl -H "Authorization: Bearer abc123" http://localhost:8080/healthz
+  ```
 
 ---
 
-### 🖼️ 2. 图像 MIA 工具（开发中）
-
-目标功能：
-
-* 对 CLIP / LLaVA / ViT 模型执行图像成员推理；
-* 计算指标：最大置信度、熵、KL-gap、Renyi-entropy 等；
-* 支持批量分析与单样本推断；
-* 提供 Gradio 前端与可视化报告。
-
-预计结构：
+### 🔹 启动前端
 
 ```bash
-python -m scripts.gradio_image
+cd service/portal
+npm run dev
 ```
+
+访问 [http://localhost:5173](http://localhost:5173)
+
+首次打开请：
+
+1. 设置 API Base URL 为 `http://localhost:8080`
+2. 设置 API Key 为 `.env` 中的密钥（如 `abc123`）
+3. 点击「加载 Models/Configs」
+4. 输入样本文本并执行推理
+
+---
+
+## 🎯 后端接口说明
+
+| 路径            | 方法   | 功能                |
+| ------------- | ---- | ----------------- |
+| `/healthz`    | GET  | 健康检查              |
+| `/v1/models`  | GET  | 返回可用模型字典          |
+| `/v1/configs` | GET  | 返回可用阈值配置          |
+| `/v1/decide`  | POST | 执行单样本成员推断         |
+| `/metrics`    | GET  | Prometheus 监控指标导出 |
+
+示例请求：
+
+```json
+{
+  "text": "The mitochondrion is the powerhouse of the cell.",
+  "family": "pythia",
+  "model": "pythia-410m",
+  "cfg": "WikiMIA_length128",
+  "metric_group": "mink++",
+  "subkey": "0.3",
+  "mode": "bestJ"
+}
+```
+
+---
+
+## 💡 前端功能亮点
+
+| 模块        | 功能                         | 技术                          |
+| --------- | -------------------------- | --------------------------- |
+| **配置面板**  | API Base、Key、ClientId 动态绑定 | React Hooks + LocalStorage  |
+| **模型列表**  | 自动请求 `/v1/models`          | Axios + JSON 视图             |
+| **配置列表**  | 自动请求 `/v1/configs`         | 响应式布局 + 暗色优化                |
+| **判定区**   | 输入文本、选择模型、指标               | Tailwind 表单组件               |
+| **响应展示区** | JSON 美化输出                  | `font-mono` + 内阴影卡片         |
+| **全局主题**  | 暗色模式优化                     | `dark:bg-slate-900` + 自定义灰阶 |
 
 ---
 
 ## 🧠 背景原理
 
-**Membership Inference Attack (MIA)**：
-用于评估模型是否泄露训练数据隐私。攻击者通过输出分布（如困惑度、置信度、梯度、特征模长等）区分样本是否被模型训练过。
+**Membership Inference Attack (MIA)** 是用于评估模型是否泄露训练样本隐私的攻击方式。
+核心思想：通过观测模型在输入样本上的输出分布（如 PPL、Min-K%、置信度差距等），判断样本是否属于训练集。
 
-MIA-Spector 提供：
+MIA-Spector 将该流程模块化，实现：
 
-* 单样本分析接口（API / Gradio）；
-* 批量数据集评估（AUROC、TPR@FPR、Youden J 阈值等）；
-* 概率校准器（Sigmoid / ECDF / 距离映射）；
-* YAML-化配置与跨模型复用。
+* 单样本推断 + 批量分析
+* 多指标融合与方向性决策
+* 可视化 ROC/AUC 评估
+* 跨模型阈值复用（基于 YAML）
 
 ---
 
-## 📊 输出格式
+## 📊 输出示例
 
-JSON/YAML 结构：
-
-```yaml
-data_name: WikiMIA_length128
-alpha: 0.01
-thresholds:
-  mink++:
-    '0.3':
-      direction: '+'
-      threshold_bestJ: -1.4950
-      threshold_fpr_alpha: -1.3490
-      calibrator:
-        a: 0.763
-        b: 2.137
-      stats:
-        posdir_means:
-          member: -2.20
-          non_member: -2.45
+```json
+{
+  "decision": "Uncertain",
+  "confidence": 0.67,
+  "score": -0.76,
+  "threshold": -0.91,
+  "metric_group": "mink++",
+  "subkey": "0.3",
+  "direction": "+",
+  "mode": "bestJ"
+}
 ```
 
 ---
 
-## 📦 未来规划
-
-* [ ] 完善 **图像-MIA Inspector**
-* [ ] 增加 **RAG + MIA 混合测试模式**
-* [ ] 支持 **Diffusion / LVLM 成员攻击**
-* [ ] 增加 Web API 与 Docker 部署版本
-* [ ] 发布在线 Demo 页面与论文版介绍
-
----
-
-## 🧾 引用
-
-若本工具对你的研究有帮助，请引用：
+## 🧾 引用与声明
 
 ```bibtex
 @misc{MIA-Spector2025,
-  title  = {MIA-Spector: Unified Toolkit for Text and Image Membership Inference Analysis},
+  title  = {MIA-Spector: Unified Platform for Text and Image Membership Inference Analysis},
   author = {Liu, Jiajun and Collaborators},
   year   = {2025},
   url    = {https://github.com/JiajunLiu/MIA-Spector}
 }
 ```
 
----
-
-## 🛡️ 免责声明
-
-本项目仅用于 **隐私安全研究与模型鲁棒性分析**。
-任何将其用于攻击生产模型或数据泄露的行为均与作者无关。
-
+> ⚠️ 本项目仅供隐私安全研究与防御分析使用，任何将其用于攻击或泄露数据的行为与作者无关。
