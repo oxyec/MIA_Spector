@@ -1,0 +1,13 @@
+export default function InputField(props) {
+    return (
+      <input
+        {...props}
+        className={`w-full rounded-lg border border-slate-400/40 bg-slate-100 text-slate-800
+                    placeholder-slate-500 focus:border-violet-400 focus:ring-violet-300
+                    dark:bg-slate-800 dark:text-slate-300 dark:placeholder-slate-500
+                    dark:border-slate-700 dark:focus:border-violet-500 dark:focus:ring-violet-500/30
+                    ${props.className || ""}`}
+      />
+    );
+  }
+  

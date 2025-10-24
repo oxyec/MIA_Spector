@@ -1,9 +1,12 @@
 import time, json
-from fastapi import Request
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 class JSONLogMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.method == "OPTIONS":
+            return Response(status_code=200)
+        
         start = time.time()
         resp = await call_next(request)
         cost = (time.time() - start) * 1000

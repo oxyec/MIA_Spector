@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import get_settings
@@ -9,7 +9,7 @@ from app.config import get_settings
 
 settings = get_settings()
 
-EXEMPT_PATHS = {"/healthz", "/readyz", "/metrics"}  # 不需要鉴权
+EXEMPT_PATHS = {"/healthz", "/readyz", "/metrics", "/favicon.ico"}  # 不需要鉴权
 
 def _parse_keys():
     keys = [k.strip() for k in settings.API_KEYS.split(",") if k.strip()]
@@ -21,6 +21,10 @@ print(ALLOWED_KEYS)
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        # 预检请求直接放行
+        if request.method == "OPTIONS":
+            return Response(status_code=200)
+
         if request.url.path in EXEMPT_PATHS:
             return await call_next(request)
         

@@ -5,7 +5,7 @@
 
 import time, asyncio
 from collections import defaultdict
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -54,6 +54,9 @@ def _key_from_request(req: Request) -> str:
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.method == "OPTIONS":
+            return Response(status_code=200)
+        
         key = _client_key(request)
         bucket = _buckets[key]
 
