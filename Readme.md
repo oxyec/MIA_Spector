@@ -1,59 +1,60 @@
-## 🧠 MIA-Spector: Membership Inference Analysis Platform
+# 🧠 MIA-Spector: Membership Inference Analysis Platform
 
-**MIA-Spector** 是一个面向大模型隐私评估的统一平台，支持 **文本生成模型（LLM）** 与 **多模态模型（图像-文本）** 的成员推理攻击（Membership Inference Attack, MIA）分析与可视化。
-本平台由两部分组成：
+**MIA-Spector** is a unified platform designed for privacy risk evaluation on **Large Language Models (LLMs)**, providing Membership Inference Attack (MIA) analysis and visualization.
 
-1. 🧩 **MIA-Inspector API（后端）** — 基于 FastAPI 的 MIA 决策服务
-2. 💡 **MIA-Portal（前端）** — 基于 React + Tailwind 的可视化控制台
+The platform contains two major components:
 
----
-
-## 🌟 功能总览
-
-| 模块                         | 功能                                            | 技术亮点                                                    |
-| -------------------------- | --------------------------------------------- | ------------------------------------------------------- |
-| **后端 MIA-Inspector API**   | 统一加载多种 LLM（Pythia、LLaMA 等），提供 MIA 指标计算与阈值判定接口 | ✔ FastAPI 异步架构<br>✔ 多模型自动注册 + 缓存加载<br>✔ Prometheus 性能监控 |
-| **前端 MIA-Portal 控制台**      | 交互式界面调用后端接口，支持模型选择、配置加载、单样本推断与结果展示            | ✔ 暗色模式美化<br>✔ 响应式布局<br>✔ JSON 高亮可视化                     |
-| **安全层 (Auth + RateLimit)** | API Key 鉴权 + Token Bucket 限流算法，防止滥用与爆破        | ✔ 动态读取 `.env`<br>✔ 自定义限速参数<br>✔ 每个客户端独立计数               |
-| **指标分析核心 (Metric Engine)** | 支持 Min-K%、Min-K++、PPL、Renyi-entropy 等多种指标     | ✔ 自动加载 YAML 阈值<br>✔ Youden J / FPR@α 模式切换               |
-| **系统监控**                   | `/metrics` 接口导出实时统计                           | ✔ 请求量、延迟直方图、GPU 使用率                                     |
+1. 🧩 **MIA-Inspector API (Backend)** — FastAPI-powered inference & decision service  
+2. 💡 **MIA-Portal (Frontend)** — React + Tailwind interactive visualization console
 
 ---
 
-## 🧩 项目结构
+## 🌟 Features Overview
 
-```
+| Module | Function | Tech Highlights |
+| ------ | -------- | --------------- |
+| **Backend — MIA-Inspector API** | Unified LLM loading (Pythia, LLaMA, etc.) with MIA metric computation and decision | ✔ Async FastAPI<br>✔ Auto model registry + caching<br>✔ Prometheus performance metrics |
+| **Frontend — MIA-Portal** | Interactive dashboard for selecting model/config and performing single-sample MIA decision | ✔ Modern dark UI<br>✔ Responsive layout<br>✔ Pretty JSON rendering |
+| **Security Layer (Auth + Rate Limit)** | API key authentication with Token-Bucket rate control | ✔ Dynamic `.env` loading<br>✔ Configurable QPS limit<br>✔ Per-client counters |
+| **Metric Engine** | Supports Min-K%, Min-K++, PPL, Renyi entropy, etc. | ✔ YAML-based threshold loading<br>✔ Multiple inference modes (Youden J / FPR@α) |
+| **System Monitoring** | `/metrics` endpoint export | ✔ Traffic stats, latency histograms, GPU monitoring |
+
+---
+
+## 🧩 Project Structure
+
+```text
 MIA-Spector/
 │
 ├── service/
-│   ├── app/              ← 后端 API (FastAPI)
-│   │   ├── main.py       # 入口
-│   │   ├── deps.py       # 模型加载与缓存
-│   │   ├── middlewares/  # 限流与鉴权中间件
-│   │   ├── routers/      # 路由 (health, meta, decide)
-│   │   └── config.py     # 全局配置（含 MODELS, CFGS）
+│   ├── app/              ← Backend API (FastAPI)
+│   │   ├── main.py       # Entrypoint
+│   │   ├── deps.py       # Model loading & caching
+│   │   ├── middlewares/  # Auth + rate limit
+│   │   ├── routers/      # Health, Meta, Decision
+│   │   └── config.py     # Global config (MODELS, CFGS)
 │   │
-│   ├── portal/           ← 前端 (React + Vite + Tailwind)
+│   ├── portal/           ← Frontend (React + Vite + Tailwind)
 │   │   ├── src/
-│   │   │   ├── pages/Console.jsx     # 控制台主界面
+│   │   │   ├── pages/Console.jsx
 │   │   │   ├── components/SectionCard.jsx
-│   │   │   └── index.css             # 统一样式
+│   │   │   └── index.css
 │   │   └── vite.config.js
 │   │
-│   └── uvicorn.run.sh     # 一键启动脚本
+│   └── uvicorn.run.sh    # One-click launch script
 │
-├── attacks/               # MIA 指标核心逻辑
-├── src/                   # 工具函数 (YAML加载、指标计算)
-├── configs/               # 阈值配置文件
-├── models/                # 本地模型权重路径
+├── attacks/               # Core MIA metric algorithms
+├── src/                   # Utility modules
+├── configs/               # YAML thresholds
+├── models/                # Local HF model weights
 └── README.md
 ```
 
 ---
 
-## ⚙️ 环境安装
+## ⚙️ Installation
 
-### 后端环境
+### Backend Environment
 
 ```bash
 conda create -n mia-inspector python=3.11
@@ -61,75 +62,72 @@ conda activate mia-inspector
 pip install -r requirements.txt
 ```
 
-### 前端环境
-
+### Frontend
 ```bash
 cd service/portal
 npm install
 ```
 
----
+````markdown
+## 🚀 Launch & Usage
 
-## 🚀 启动与使用
-
-### 🔹 启动后端
+### 🔹 Start Backend
 
 ```bash
 cd service/app
 bash ../uvicorn.run.sh
-```
+````
 
-或手动：
+or manually:
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 ```
 
-**配置说明**
+#### `.env` Example
 
-* `.env` 文件：
+```bash
+API_KEYS=abc123,def456
+REQUIRE_AUTH=True
+```
 
-  ```bash
-  API_KEYS=abc123,def456
-  REQUIRE_AUTH=True
-  ```
-* 鉴权测试：
+#### Authentication Test
 
-  ```bash
-  curl -H "Authorization: Bearer abc123" http://localhost:8080/healthz
-  ```
+```bash
+curl -H "Authorization: Bearer abc123" http://localhost:8080/healthz
+```
 
 ---
 
-### 🔹 启动前端
+### 🔹 Start Frontend
 
 ```bash
 cd service/portal
 npm run dev
 ```
 
-访问 [http://localhost:5173](http://localhost:5173)
+Visit: [http://localhost:5173](http://localhost:5173)
 
-首次打开请：
+#### Initial Setup on UI:
 
-1. 设置 API Base URL 为 `http://localhost:8080`
-2. 设置 API Key 为 `.env` 中的密钥（如 `abc123`）
-3. 点击「加载 Models/Configs」
-4. 输入样本文本并执行推理
+1. Set API Base URL: `http://localhost:8080`
+2. Enter API Key (e.g., `abc123`)
+3. Click **Load Models / Configs**
+4. Input text → Run decision
 
 ---
 
-## 🎯 后端接口说明
+## 🎯 Backend API Endpoints
 
-| 路径            | 方法   | 功能                |
-| ------------- | ---- | ----------------- |
-| `/healthz`    | GET  | 健康检查              |
-| `/v1/models`  | GET  | 返回可用模型字典          |
-| `/v1/configs` | GET  | 返回可用阈值配置          |
-| `/v1/decide`  | POST | 执行单样本成员推断         |
-| `/metrics`    | GET  | Prometheus 监控指标导出 |
+| Path          | Method | Description                   |
+| ------------- | ------ | ----------------------------- |
+| `/healthz`    | GET    | Health check                  |
+| `/v1/models`  | GET    | Available model registry      |
+| `/v1/configs` | GET    | Threshold configs             |
+| `/v1/decide`  | POST   | Membership inference decision |
+| `/metrics`    | GET    | Prometheus monitoring export  |
 
-示例请求：
+Example request:
 
 ```json
 {
@@ -145,34 +143,33 @@ npm run dev
 
 ---
 
-## 💡 前端功能亮点
+## 💡 Frontend Highlight Features
 
-| 模块        | 功能                         | 技术                          |
-| --------- | -------------------------- | --------------------------- |
-| **配置面板**  | API Base、Key、ClientId 动态绑定 | React Hooks + LocalStorage  |
-| **模型列表**  | 自动请求 `/v1/models`          | Axios + JSON 视图             |
-| **配置列表**  | 自动请求 `/v1/configs`         | 响应式布局 + 暗色优化                |
-| **判定区**   | 输入文本、选择模型、指标               | Tailwind 表单组件               |
-| **响应展示区** | JSON 美化输出                  | `font-mono` + 内阴影卡片         |
-| **全局主题**  | 暗色模式优化                     | `dark:bg-slate-900` + 自定义灰阶 |
-
----
-
-## 🧠 背景原理
-
-**Membership Inference Attack (MIA)** 是用于评估模型是否泄露训练样本隐私的攻击方式。
-核心思想：通过观测模型在输入样本上的输出分布（如 PPL、Min-K%、置信度差距等），判断样本是否属于训练集。
-
-MIA-Spector 将该流程模块化，实现：
-
-* 单样本推断 + 批量分析
-* 多指标融合与方向性决策
-* 可视化 ROC/AUC 评估
-* 跨模型阈值复用（基于 YAML）
+| Module          | Function                            | Tech                                     |
+| --------------- | ----------------------------------- | ---------------------------------------- |
+| Config Panel    | Bind API base, key, clientId        | React Hooks + LocalStorage               |
+| Model Browser   | Fetch `/v1/models`                  | Axios + JSON viewer                      |
+| Config Browser  | Fetch `/v1/configs`                 | Responsive grid, dark-mode tuned         |
+| Inference Panel | Text input + model/metric selection | Tailwind form components                 |
+| Result Viewer   | Pretty JSON rendering               | font-mono + shadow cards                 |
+| Theme           | Dark-mode optimized                 | `dark:bg-slate-900` + custom gray scales |
 
 ---
 
-## 📊 输出示例
+## 🧠 Background
+
+**Membership Inference Attack (MIA)** evaluates whether a model leaks training samples by observing its output distribution (e.g., PPL, Min-K%, confidence gaps).
+
+MIA-Spector provides:
+
+* Single-sample decision + batch analysis
+* Multi-metric fusion & directional decision
+* ROC / AUC visualization
+* Cross-model threshold sharing via YAML configs
+
+---
+
+## 📊 Example Output
 
 ```json
 {
@@ -189,7 +186,7 @@ MIA-Spector 将该流程模块化，实现：
 
 ---
 
-## 🧾 引用与声明
+## 🧾 Citation
 
 ```bibtex
 @misc{MIA-Spector2025,
@@ -200,4 +197,5 @@ MIA-Spector 将该流程模块化，实现：
 }
 ```
 
-> ⚠️ 本项目仅供隐私安全研究与防御分析使用，任何将其用于攻击或泄露数据的行为与作者无关。
+> ⚠️ This project is intended only for privacy & security research and defensive analysis. Any misuse for unauthorized attacks or data leakage is strictly prohibited.
+
