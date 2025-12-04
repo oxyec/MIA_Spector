@@ -12,14 +12,13 @@ RUN apt-get update && apt-get install -y \
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# --- KRİTİK BÖLGE ---
-# Buraya DOKUNMA, 4GB'lık indirmeyi hafızadan (CACHE) kullansın.
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- EKSİK PARÇALARIN HEPSİ BURADA ---
-# pydantic-settings: Ayarlar için (Hata verdi)
-# prometheus_client: Sağlık kontrolü için (Hata verdi)
-# openai & tiktoken: API kullanımı için (İleride hata vermesin diye ekliyoruz)
+# --- Missing pieces ---
+# pydantic-settings
+# prometheus_client
+# openai & tiktoken
 RUN pip install pydantic-settings prometheus_client openai tiktoken
 
 # Copy the rest of the application code
