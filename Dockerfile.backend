@@ -5,7 +5,6 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-# Install build-essential for compiling some python packages if needed
 RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -13,10 +12,15 @@ RUN apt-get update && apt-get install -y \
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
-# Note: torch==2.8.0 might not exist on public PyPI yet (as of early 2025).
-# If build fails, consider removing versions or using available ones.
+# --- KRİTİK BÖLGE ---
+# Buraya DOKUNMA, 4GB'lık indirmeyi hafızadan (CACHE) kullansın.
 RUN pip install --no-cache-dir -r requirements.txt
+
+# --- EKSİK PARÇALARIN HEPSİ BURADA ---
+# pydantic-settings: Ayarlar için (Hata verdi)
+# prometheus_client: Sağlık kontrolü için (Hata verdi)
+# openai & tiktoken: API kullanımı için (İleride hata vermesin diye ekliyoruz)
+RUN pip install pydantic-settings prometheus_client openai tiktoken
 
 # Copy the rest of the application code
 COPY . .
