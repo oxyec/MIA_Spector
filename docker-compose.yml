@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mia-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Fallback if no GPU is found or docker-compose version is old, this block is ignored or warns.
+    # To run without GPU, you can just ignore the warnings or remove the deploy block.
+
+  frontend:
+    build:
+      context: ./service/portal
+      dockerfile: Dockerfile
+    container_name: mia-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+    depends_on:
+      - backend
