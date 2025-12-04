@@ -10,15 +10,6 @@ services:
       - .env
     volumes:
       - .:/app
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    # Fallback if no GPU is found or docker-compose version is old, this block is ignored or warns.
-    # To run without GPU, you can just ignore the warnings or remove the deploy block.
 
   frontend:
     build:

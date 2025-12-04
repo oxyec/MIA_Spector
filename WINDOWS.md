@@ -6,6 +6,8 @@ This guide explains how to run MIA-Spector on Windows 11 using either Docker (re
 
 - **Git**: [Download Git](https://git-scm.com/downloads)
 - **Docker Desktop**: [Download Docker Desktop](https://www.docker.com/products/docker-desktop/) (Recommended method)
+  - [Download for Windows – AMD64](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
+  - [Download for Windows – ARM64](https://desktop.docker.com/win/main/arm64/Docker%20Desktop%20Installer.exe)
   - Ensure WSL 2 backend is enabled.
 - **Python 3.11** (For native setup only)
 - **Node.js 18+** (For native setup only)
@@ -29,20 +31,21 @@ Edit `.env` if you want to change API keys or disable authentication.
 
 ### 2. Run with Docker Compose
 
-Open a terminal (PowerShell or Command Prompt) in the project root and run:
+Open a terminal (PowerShell or Command Prompt) in the project root.
 
+**For CPU Usage (Default):**
 ```powershell
 docker-compose up --build
 ```
 
+**For NVIDIA GPU Usage:**
+If you have an NVIDIA GPU and configured WSL 2 drivers:
+```powershell
+docker-compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+```
+
 - The **Backend** will be available at: `http://localhost:8080`
 - The **Frontend** will be available at: `http://localhost:5173`
-
-### GPU Support
-
-The `docker-compose.yml` is configured to use NVIDIA GPUs if available.
-- If you have an NVIDIA GPU and Docker Desktop with WSL 2, it should work automatically.
-- If you do **not** have a GPU, the container will still run, though you might see a warning about missing devices.
 
 ### Troubleshooting Docker
 
