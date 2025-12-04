@@ -47,10 +47,18 @@ docker-compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
 - The **Backend** will be available at: `http://localhost:8080`
 - The **Frontend** will be available at: `http://localhost:5173`
 
+### Stopping Docker
+
+To stop the containers, press `Ctrl+C` in the terminal or run:
+```powershell
+docker-compose down
+```
+
 ### Troubleshooting Docker
 
 - **Port Conflicts**: Ensure ports `8080` and `5173` are not in use.
 - **Build Failures**: If the build fails due to network issues, try running `docker-compose build --no-cache`.
+- **GPU Issues**: Ensure you have installed the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) if required, although Docker Desktop typically handles this.
 
 ---
 
